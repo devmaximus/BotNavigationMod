@@ -75,12 +75,16 @@ Same pattern as QuestingBots / DynamicMaps — full-file snapshots under `config
 
 ### Before editing live config
 
+Prefer `/config-snapshot` skill (Kind + Context required):
+
 ```powershell
-pwsh -File D:\Work\local\Test\configs\config-history\scripts\snapshot-config.ps1 `
-  -Install EscapeFromTarkov `
+pwsh -File D:\Work\local\Test\.cursor\skills\utility\config-snapshot\scripts\snapshot.ps1 `
   -RelativePath "BepInEx/config/com.mike.botnavigationmod.cfg" `
-  -Summary "pre: describe upcoming edit" `
-  -Commit
+  -Kind pre `
+  -Summary "describe upcoming edit" `
+  -Context "Why this edit, what to restore if bad, work unit id." `
+  -WorkUnit "20260729_091502_bot-navigation-mod" `
+  -Plugin "BotNavigationMod"
 ```
 
 If the live cfg does not exist yet (never loaded plugin), seed from shipped defaults then snapshot:
