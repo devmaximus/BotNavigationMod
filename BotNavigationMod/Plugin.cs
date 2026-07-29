@@ -10,7 +10,7 @@ namespace BotNavigationMod;
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 public sealed class Plugin : BaseUnityPlugin
 {
-    public const string PluginGuid = "com.mike.botnavigationmod";
+    public const string PluginGuid = "com.devmaximus.botnavigationmod";
     public const string PluginName = "BotNavigationMod";
     public const string PluginVersion = "1.0.0";
 
