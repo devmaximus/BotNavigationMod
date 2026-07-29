@@ -4,13 +4,18 @@
 
 .PARAMETER Source
   Defaults — copy from repo config/defaults
-  History  — copy from configs/config-history snapshot
+  History  — copy from config-history snapshot
 
 .PARAMETER Version
   History only: version number (e.g. 1). Omit = latest snapshot.
 
-.PARAMETER WhatIf
-  Show actions without writing.
+.PARAMETER TarkovDir
+  Live EFT/SPT install root (trailing slash optional).
+  Default: $env:SPT_TARKOV_DIR
+
+.PARAMETER ConfigHistoryRoot
+  Workspace config-history repo root.
+  Default: $env:SPT_CONFIG_HISTORY or auto-detect ../../../../configs/config-history from this script
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
@@ -18,15 +23,36 @@ param(
     [ValidateSet('Defaults', 'History')]
     [string] $Source,
 
-    [int] $Version = 0
+    [int] $Version = 0,
+
+    [string] $TarkovDir = $env:SPT_TARKOV_DIR,
+
+    [string] $ConfigHistoryRoot = $env:SPT_CONFIG_HISTORY
 )
 
 $ErrorActionPreference = 'Stop'
 
+$PluginGuid = 'com.devmaximus.botnavigationmod'
+$CfgName = "$PluginGuid.cfg"
+
 $pluginRoot = Split-Path -Parent $PSScriptRoot
-$liveCfg = 'D:\Games\EscapeFromTarkov\BepInEx\config\com.mike.botnavigationmod.cfg'
-$defaultsCfg = Join-Path $pluginRoot 'config\defaults\com.mike.botnavigationmod.cfg'
-$historyRoot = 'D:\Work\local\Test\configs\config-history\EscapeFromTarkov\BepInEx\config\com.mike.botnavigationmod.cfg'
+$defaultsCfg = Join-Path $pluginRoot "config\defaults\$CfgName"
+
+if ([string]::IsNullOrWhiteSpace($TarkovDir)) {
+    throw "TarkovDir unset. Pass -TarkovDir or set env SPT_TARKOV_DIR to your EscapeFromTarkov install root."
+}
+$TarkovDir = $TarkovDir.TrimEnd('\', '/') + '\'
+$liveCfg = Join-Path $TarkovDir "BepInEx\config\$CfgName"
+
+if ([string]::IsNullOrWhiteSpace($ConfigHistoryRoot)) {
+    $probe = (Resolve-Path (Join-Path $pluginRoot '..\..\..\configs\config-history') -ErrorAction SilentlyContinue)
+    if ($probe) { $ConfigHistoryRoot = $probe.Path }
+}
+if ([string]::IsNullOrWhiteSpace($ConfigHistoryRoot) -or -not (Test-Path -LiteralPath $ConfigHistoryRoot)) {
+    throw "ConfigHistoryRoot unset/missing. Pass -ConfigHistoryRoot or set env SPT_CONFIG_HISTORY."
+}
+
+$historyRoot = Join-Path $ConfigHistoryRoot "EscapeFromTarkov\BepInEx\config\$CfgName"
 
 function Get-HistorySource {
     param([int] $VersionNum)
@@ -49,11 +75,11 @@ function Get-HistorySource {
         if (-not $match) {
             throw "Version $VersionNum not found under $versionsDir"
         }
-        return (Join-Path $match.FullName 'com.mike.botnavigationmod.cfg')
+        return (Join-Path $match.FullName $CfgName)
     }
 
     $latest = $dirs[-1]
-    return (Join-Path $latest.FullName 'com.mike.botnavigationmod.cfg')
+    return (Join-Path $latest.FullName $CfgName)
 }
 
 $src = if ($Source -eq 'Defaults') {

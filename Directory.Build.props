@@ -1,0 +1,5 @@
+<Project>
+  <!-- Local machine path only — see Directory.Build.props.user.example -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.props.user"
+          Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.props.user')" />
+</Project>

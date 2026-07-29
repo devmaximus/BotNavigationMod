@@ -1,0 +1,9 @@
+<!--
+  Optional local override (gitignored). Copy to Directory.Build.props.user and set your install:
+
+  <Project>
+    <PropertyGroup>
+      <TarkovDir>C:\Path\To\EscapeFromTarkov\</TarkovDir>
+    </PropertyGroup>
+  </Project>
+-->

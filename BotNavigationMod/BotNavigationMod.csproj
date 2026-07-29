@@ -7,9 +7,22 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <!--
+    Install root (trailing slash). Do NOT hardcode machine paths in this file.
+    Resolve order:
+      1) -p:TarkovDir="C:\Path\To\EscapeFromTarkov\"
+      2) env SPT_TARKOV_DIR
+      3) optional Directory.Build.props.user (gitignored)
+  -->
   <PropertyGroup>
-    <TarkovDir>D:\Games\EscapeFromTarkov\</TarkovDir>
+    <TarkovDir Condition="'$(TarkovDir)' == '' and '$(SPT_TARKOV_DIR)' != ''">$(SPT_TARKOV_DIR)</TarkovDir>
   </PropertyGroup>
+
+  <Target Name="RequireTarkovDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error
+      Condition="'$(TarkovDir)' == ''"
+      Text="TarkovDir is unset. Pass -p:TarkovDir=&quot;C:\Path\To\EscapeFromTarkov\&quot; or set env SPT_TARKOV_DIR (trailing slash)." />
+  </Target>
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -38,7 +51,7 @@
     </Reference>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TarkovDir)' != ''">
     <MakeDir Directories="$(TarkovDir)BepInEx\plugins\BotNavigationMod\" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TarkovDir)BepInEx\plugins\BotNavigationMod\" />
   </Target>
